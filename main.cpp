@@ -13,6 +13,18 @@ int cellCount = 25;
 
 double lastUpdateTime = 0;
 
+bool ElementInDeque(Vector2 element, deque<Vector2> deque)
+{
+    for (unsigned int i = 0; i < deque.size(); i++)
+    {
+        if (Vector2Equals(deque[i], element))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool eventTriggered(double interval)
 {
     double currentTime = GetTime();
@@ -54,12 +66,12 @@ public:
     Vector2 position;
     Texture2D texture;
 
-    Food()
+    Food(deque<Vector2> snakeBody)
     {
         Image image = LoadImage("Graphics/food.png");
         texture = LoadTextureFromImage(image);
         UnloadImage(image);
-        position = GenerateRandomPos();
+        position = GenerateRandomPos(snakeBody);
     }
     ~Food()
     {
@@ -71,28 +83,49 @@ public:
         DrawTexture(texture, position.x * cellSize, position.y * cellSize, WHITE);
     }
 
-    Vector2 GenerateRandomPos()
-    {
+    Vector2 GenerateRandomCell(){
+        
         float x = GetRandomValue(0, cellCount - 1);
         float y = GetRandomValue(0, cellCount - 1);
-        return Vector2{x, y};
+        return Vector2{x,y};
+    }
+
+    Vector2 GenerateRandomPos(deque<Vector2> snakeBody)
+    {
+        Vector2 position = GenerateRandomCell();
+        while (ElementInDeque(position, snakeBody))
+        {
+            position = GenerateRandomCell();
+        }
+        return position;
     }
 };
 
-class Game{
-    public:
-    Food food = Food();
+class Game
+{
+public:
+    Food food = Food(snake.body);
     Snake snake = Snake();
 
-    void Draw(){
+    void Draw()
+    {
         food.Draw();
         snake.Draw();
     }
 
-    void Update(){
+    void Update()
+    {
         snake.Update();
+        CheckCollisionWithFood();
     }
 
+    void CheckCollisionWithFood()
+    {
+        if (Vector2Equals(snake.body[0], food.position))
+        {
+            food.position = food.GenerateRandomPos(snake.body);
+        }
+    }
 };
 
 int main()
@@ -109,19 +142,23 @@ int main()
 
         if (eventTriggered(0.2))
         {
-            game.snake.Update();
+            game.Update();
         }
 
-        if(IsKeyPressed(KEY_UP) && game.snake.direction.y != 1){
+        if (IsKeyPressed(KEY_UP) && game.snake.direction.y != 1)
+        {
             game.snake.direction = {0, -1};
         }
-        if(IsKeyPressed(KEY_DOWN) && game.snake.direction.y != -1){
+        if (IsKeyPressed(KEY_DOWN) && game.snake.direction.y != -1)
+        {
             game.snake.direction = {0, 1};
         }
-        if(IsKeyPressed(KEY_LEFT) && game.snake.direction.x != 1){
+        if (IsKeyPressed(KEY_LEFT) && game.snake.direction.x != 1)
+        {
             game.snake.direction = {-1, 0};
         }
-        if(IsKeyPressed(KEY_RIGHT) && game.snake.direction.x != -1){
+        if (IsKeyPressed(KEY_RIGHT) && game.snake.direction.x != -1)
+        {
             game.snake.direction = {1, 0};
         }
 
