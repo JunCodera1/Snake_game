@@ -41,6 +41,7 @@ class Snake
 public:
     deque<Vector2> body = {Vector2{6, 9}, Vector2{5, 9}, Vector2{4, 9}};
     Vector2 direction = {1, 0};
+    bool addSegment = false;
 
     void Draw()
     {
@@ -54,9 +55,17 @@ public:
     }
 
     void Update()
-    {
-        body.pop_back();
+    {   
         body.push_front(Vector2Add(body[0], direction));
+        
+        if (addSegment == true)
+        {
+            addSegment = false;
+        }
+        else
+        {
+            body.pop_back();
+        }
     }
 };
 
@@ -83,11 +92,12 @@ public:
         DrawTexture(texture, position.x * cellSize, position.y * cellSize, WHITE);
     }
 
-    Vector2 GenerateRandomCell(){
-        
+    Vector2 GenerateRandomCell()
+    {
+
         float x = GetRandomValue(0, cellCount - 1);
         float y = GetRandomValue(0, cellCount - 1);
-        return Vector2{x,y};
+        return Vector2{x, y};
     }
 
     Vector2 GenerateRandomPos(deque<Vector2> snakeBody)
@@ -124,6 +134,7 @@ public:
         if (Vector2Equals(snake.body[0], food.position))
         {
             food.position = food.GenerateRandomPos(snake.body);
+            snake.addSegment = true;
         }
     }
 };
